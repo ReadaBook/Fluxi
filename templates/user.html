@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{ user["username"] }}'s Page
+{% endblock %}
+{% block main %}
+<h1>{{user['name']}} {{user['surname']}}'s Boards</h1>
+<br>
+<div class="row">
+    {% for board in boards %}
+    <div class="col-lg-4">
+        <div class="board">
+
+            <nav class="navbar navbar-light">
+                <h3 class="navbar-brand">{{ board['name'] }}</h3>
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#board_{{ board['id'] }}" aria-controls="board_{{ board['id'] }}" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="toggler">&#9776;</span>
+                </button>
+                <div class="collapse navbar-collapse" id="board_{{ board['id'] }}">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a href="/board/{{board['id']}}" class="board_button fa-green"><i class="far fa-green fa-sticky-note fa-2"></i></a>
+                            <button class="board_button fa-yellow ml-2" data-toggle="modal"
+                                data-target="#edit_{{ board['id'] }}"><i class="far fa-yellow fa-edit fa-2"></i></button>
+                            <div class="modal fade" id="edit_{{ board['id'] }}" tabindex="-1" role="dialog"
+                                aria-labelledby="{{board['id'] }}_page" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="{{board['id'] }}_editor">
+                                                Edit {{board['name'] }}</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="/board/update/{{board['id'] }}" method="post" id="update_{{board['id'] }}">
+                                                <div class="form-group">
+                                                    <input autocomplete="off" autofocus class="form-control" name="name"
+                                                        id="name" value="{{ board['name'] }}" type="text" />
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button class="modal_button"><i class="fas fa-sync-alt"></i>Update Board</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="board_button fa-red" data-toggle="modal"
+                                data-target="#delete_{{ board['id'] }}">
+                                <i class="far fa-red fa-trash-alt fa-2"></i>
+                            </button>
+                            <div class="modal fade" id="delete_{{ board['id'] }}" tabindex="-1" role="dialog"
+                                aria-labelledby="{{board['name'] }}_delete" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="{{board['name'] }}_delete">Delete Board
+                                            </h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Delete {{board['name'] }}?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="/board/{{board['id']}}/delete" class="modal_button"><i class="far fa-trash-alt"></i>Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="board-text">
+                <h6 class="card-subtitle mb-2 text-muted">by {{ user["name"] }} {{ user["surname"] }}</h6>
+            </div>
+        </div>
+    </div>
+
+    {% endfor %}
+</div>
+<script>
+
+</script>
+{% endblock %}

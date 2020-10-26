@@ -1,0 +1,331 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{ board["name"] }} Cards
+{% endblock %}
+{% block main %}
+<h1>{{ board["name"] }}</h1>
+<br>
+<span class="row">
+    <div class="each">
+        <ul class="list" id="todo">
+            <h1>
+                To Do
+            </h1>
+            <div class="file" ondrop="drop(event)" ondragover="allowDrop(event)">
+                {% for task in todos %}
+                <li draggable="true" class="task-list" ondragstart="drag(event)" ondragover="noAllowDrop(event)"
+                    id="{{task['id']}}">
+                    <div class="new-view">
+                        <span id="new_view_{{task['id']}}">{{task["name"]}}</span>
+                        <div class="add" data-toggle="modal" data-target="#view-task-{{task['id']}}">
+                           <i class="fas fa-pencil-alt"></i>
+                        </div>
+                        <div id="view-task-{{task['id']}}" class="modal fade bd-example-modal-lg" tabindex="-1"
+                            role="dialog" aria-labelledby="#taskEditLabel{{task['id']}}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <div class="control-group">
+                                            <label id="name_task_{{task['id']}}" onclick="name_edit({{task['id']}})">
+                                                <strong>{{task["name"]}}</strong>
+                                            </label>
+                                            <div class="hide" id="edit_name_task_{{task['id']}}">
+                                                <input id="edit_name_{{task['id']}}" type="text" autocomplete="off" class="form-control" name="name" value="{{task['name']}}" />
+                                                <button class="board_button mt-1" onclick="nameUpdate({{task['id']}})"><i class="far fa-save"></i>Save</button>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="overview_{{task['id']}}">
+                                            <div class="tabcontent">
+                                                <span class="add">
+                                                    <a href="/board/{{board['id']}}/task/{{task['id']}}/delete"><i class="far fa-red fa-trash-alt fa-2"></i></a>
+                                                </span>
+                                                <p><i class="fas fa-align-left pr-2 fa-2"></i> Description</p>
+                                                <div class="control-group">
+                                                    <label id="desc_task_{{task['id']}}" class="pb-3 font" onclick="desc_edit({{task['id']}})">
+                                                        {{task["description"]}}
+                                                    </label>
+                                                    <div class="hide" id="edit_desc_task_{{task['id']}}">
+                                                        <textarea id="edit_desc_{{task['id']}}" autocomplete="off" class="form-control" name="description">{{task['description']}}</textarea>
+                                                        <button class="board_button mt-1 mb-3" onclick="descUpdate({{task['id']}})"><i class="far fa-save"></i>Save</button>
+                                                    </div>
+                                                </div>
+                                                <p> <i class="far fa-calendar-check pr-3 fa-2"></i>Due Date</p>
+                                                <div class="control-group">
+                                                    <label id="due_task_{{task['id']}}" class="pb-3 font" onclick="due_edit({{task['id']}})">
+                                                        {{task["due"]}}
+                                                    </label>
+                                                    <div class="hide" id="edit_due_task_{{task['id']}}">
+                                                        <input style="width:30%;" id="edit_due_{{task['id']}}" type="date" autocomplete="off" class="form-control" name="due" value="{{task['due']}}" />
+                                                        <button class="board_button mt-1 mb-3" onclick="dueUpdate({{task['id']}})"><i class="far fa-save"></i>Save</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="comment_{{task['id']}}">
+                                            <div class="tabcontent">
+                                                <p><i class="far fa-edit pr-2 fa-2"></i>Notes</p>
+                                                {% for comment in comments %}
+                                                {% if task['id'] == comment['task_id'] %}
+                                                <div class="comment" id="commenter_{{comment['id']}}">
+                                                    <div class="control-group">
+                                                        <label id="comment_text_{{comment['id']}}" onclick="comment_edit({{comment['id']}})">
+                                                            {{comment["text"]}}
+                                                        </label>
+                                                        <div class="hide" id="edit_comment_text_{{comment['id']}}">
+                                                            <input autocomplete="off" autofocus class="form-control" name="text" id="comment_edit_{{comment['id']}}"
+                                                                    value="{{comment['text']}}" type="text" />
+                                                            <button class="board_button mt-1" onclick="commentUpdate({{comment['id']}})"><i class="far fa-save"></i>Save</button>
+                                                            <button class="board_button mt-1" onclick="commentDelete({{comment['id']}})">
+                                                               <i class="far fa-trash-alt"></i> Delete
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                {% endfor %}
+                                                <form action="/board/{{board['id']}}/comment/{{task['id']}}"
+                                                    method="post">
+                                                    <div class="form-group">
+                                                        <input autocomplete="off" autofocus class="form-control"
+                                                            name="text" id="comment_id_{{task['id']}}" placeholder="Note..."
+                                                            type="text" />
+                                                        <button class="board_button mt-2" type="submit"><i class="far fa-clipboard"></i>Add Note</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </div>
+            <li id="plus"><button class="btn btn-outline-secondary"><span class="small">Add
+                        Card...</span></button></li>
+            <div class="modal-body hide" id="new-form">
+                <form action="/board/{{board['id']}}/new" method="post" id="add_tasks">
+                    <div class="form-group">
+                        <input autocomplete="off" autofocus class="form-control" name="name" id="t_name"
+                            placeholder="Card" type="text" />
+                            <button class="btn-outline-secondary mt-1" id="add_new_task"> <span class="small">&plus; Add</span></button>
+                    </div>
+                </form>
+            </div>
+        </ul>
+    </div>
+    <div class="each">
+        <ul class="list" id="doing">
+            <h1>
+                Doing
+            </h1>
+            <div class="file" ondrop="drop(event)" ondragover="allowDrop(event)">
+                {% for task in doings %}
+                <li draggable="true" class="task-list" ondragstart="drag(event)" ondragover="noAllowDrop(event)"
+                    id="{{task['id']}}">
+                    <div class="new-view">
+                        <span id="new_view_{{task['id']}}">{{task["name"]}}</span>
+                        <div class="add" data-toggle="modal" data-target="#view-task-{{task['id']}}">
+                           <i class="fas fa-pencil-alt"></i>
+                        </div>
+                        <div id="view-task-{{task['id']}}" class="modal fade bd-example-modal-lg" tabindex="-1"
+                            role="dialog" aria-labelledby="#taskEditLabel{{task['id']}}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <div class="control-group">
+                                            <label id="name_task_{{task['id']}}" onclick="name_edit({{task['id']}})">
+                                                <strong>{{task["name"]}}</strong>
+                                            </label>
+                                            <div class="hide" id="edit_name_task_{{task['id']}}">
+                                                <input id="edit_name_{{task['id']}}" type="text" autocomplete="off" class="form-control" name="name" value="{{task['name']}}" />
+                                                <button class="board_button mt-1" onclick="nameUpdate({{task['id']}})"><i class="far fa-save"></i>Save</button>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="overview_{{task['id']}}">
+                                            <div class="tabcontent">
+                                                <span class="add">
+                                                    <a href="/board/{{board['id']}}/task/{{task['id']}}/delete"><i class="far fa-red fa-trash-alt fa-2"></i></a>
+                                                </span>
+                                                <p><i class="fas fa-align-left pr-2 fa-2"></i> Description</p>
+                                                <div class="control-group">
+                                                    <label id="desc_task_{{task['id']}}" class="pb-3 font" onclick="desc_edit({{task['id']}})">
+                                                        {{task["description"]}}
+                                                    </label>
+                                                    <div class="hide" id="edit_desc_task_{{task['id']}}">
+                                                        <textarea id="edit_desc_{{task['id']}}" autocomplete="off" class="form-control" name="description">{{task['description']}}</textarea>
+                                                        <button class="board_button mt-1 mb-3" onclick="descUpdate({{task['id']}})"><i class="far fa-save"></i>Save</button>
+                                                    </div>
+                                                </div>
+                                                <p> <i class="far fa-calendar-check pr-3 fa-2"></i>Due Date</p>
+                                                <div class="control-group">
+                                                    <label id="due_task_{{task['id']}}" class="pb-3 font" onclick="due_edit({{task['id']}})">
+                                                        {{task["due"]}}
+                                                    </label>
+                                                    <div class="hide" id="edit_due_task_{{task['id']}}">
+                                                        <input style="width:30%;" id="edit_due_{{task['id']}}" type="date" autocomplete="off" class="form-control" name="due" value="{{task['due']}}" />
+                                                        <button class="board_button mt-1 mb-3" onclick="dueUpdate({{task['id']}})">Save</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="comment_{{task['id']}}">
+                                            <div class="tabcontent">
+                                                <p><i class="far fa-edit pr-2 fa-2"></i>Notes</p>
+                                                {% for comment in comments %}
+                                                {% if task['id'] == comment['task_id'] %}
+                                                <div class="comment" id="commenter_{{comment['id']}}">
+                                                    <div class="control-group">
+                                                        <label id="comment_text_{{comment['id']}}" onclick="comment_edit({{comment['id']}})">
+                                                            {{comment["text"]}}
+                                                        </label>
+                                                        <div class="hide" id="edit_comment_text_{{comment['id']}}">
+                                                            <input autocomplete="off" autofocus class="form-control" name="text" id="comment_edit_{{comment['id']}}"
+                                                                    value="{{comment['text']}}" type="text" />
+                                                            <button class="board_button mt-1" onclick="commentUpdate({{comment['id']}})"><i class="far fa-save"></i>Save</button>
+                                                            <button class="board_button mt-1" onclick="commentDelete({{comment['id']}})">
+                                                                <i class="far fa-trash-alt"></i> Delete
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                {% endfor %}
+                                                <form action="/board/{{board['id']}}/comment/{{task['id']}}"
+                                                    method="post">
+                                                    <div class="form-group">
+                                                        <input autocomplete="off" autofocus class="form-control"
+                                                            name="text" id="comment_id_{{task['id']}}" placeholder="Note..."
+                                                            type="text" />
+                                                        <button class="board_button mt-2" type="submit"><i class="far fa-clipboard"></i>Add Note</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </div>
+        </ul>
+    </div>
+    <div class="each">
+        <ul class="list" id="done">
+            <h1>
+                Done
+            </h1>
+            <div class="file" ondrop="drop(event)" ondragover="allowDrop(event)">
+                {% for task in dones %}
+                <li draggable="true" class="task-list" ondragstart="drag(event)" ondragover="noAllowDrop(event)"
+                    id="{{task['id']}}">
+                    <div class="new-view">
+                        <span id="new_view_{{task['id']}}">{{task["name"]}}</span>
+                        <div class="add" data-toggle="modal" data-target="#view-task-{{task['id']}}">
+                           <i class="fas fa-pencil-alt"></i>
+                        </div>
+                        <div id="view-task-{{task['id']}}" class="modal fade bd-example-modal-lg" tabindex="-1"
+                            role="dialog" aria-labelledby="#taskEditLabel{{task['id']}}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <div class="control-group">
+                                            <label id="name_task_{{task['id']}}" onclick="name_edit({{task['id']}})">
+                                                <strong>{{task["name"]}}</strong>
+                                            </label>
+                                            <div class="hide" id="edit_name_task_{{task['id']}}">
+                                                <input id="edit_name_{{task['id']}}" type="text" autocomplete="off" class="form-control" name="name" value="{{task['name']}}" />
+                                                <button class="board_button mt-1" onclick="nameUpdate({{task['id']}})"><i class="far fa-save"></i>Save</button>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="overview_{{task['id']}}">
+                                            <div class="tabcontent">
+                                                <span class="add">
+                                                    <a href="/board/{{board['id']}}/task/{{task['id']}}/delete"><i class="far fa-red fa-trash-alt fa-2"></i></a>
+                                                </span>
+                                                <p><i class="fas fa-align-left pr-2 fa-2"></i> Description</p>
+                                                <div class="control-group">
+                                                    <label id="desc_task_{{task['id']}}" class="pb-3 font" onclick="desc_edit({{task['id']}})">
+                                                        {{task["description"]}}
+                                                    </label>
+                                                    <div class="hide" id="edit_desc_task_{{task['id']}}">
+                                                        <textarea id="edit_desc_{{task['id']}}" autocomplete="off" class="form-control" name="description">{{task['description']}}</textarea>
+                                                        <button class="board_button mt-1 mb-3" onclick="descUpdate({{task['id']}})"><i class="far fa-save"></i>Save</button>
+                                                    </div>
+                                                </div>
+                                                <p> <i class="far fa-calendar-check pr-3 fa-2"></i>Due Date</p>
+                                                <div class="control-group">
+                                                    <label id="due_task_{{task['id']}}" class="pb-3 font" onclick="due_edit({{task['id']}})">
+                                                        {{task["due"]}}
+                                                    </label>
+                                                    <div class="hide" id="edit_due_task_{{task['id']}}">
+                                                        <input style="width:30%;" id="edit_due_{{task['id']}}" type="date" autocomplete="off" class="form-control" name="due" value="{{task['due']}}" />
+                                                        <button class="board_button mt-1 mb-3" onclick="dueUpdate({{task['id']}})"><i class="far fa-save"></i>Save</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="comment_{{task['id']}}">
+                                            <div class="tabcontent">
+                                                <p><i class="far fa-edit pr-2 fa-2"></i>Notes</p>
+                                                {% for comment in comments %}
+                                                {% if task['id'] == comment['task_id'] %}
+                                                <div class="comment" id="commenter_{{comment['id']}}">
+                                                    <div class="control-group">
+                                                        <label id="comment_text_{{comment['id']}}" onclick="comment_edit({{comment['id']}})">
+                                                            {{comment["text"]}}
+                                                        </label>
+                                                        <div class="hide" id="edit_comment_text_{{comment['id']}}">
+                                                            <input autocomplete="off" autofocus class="form-control" name="text" id="comment_edit_{{comment['id']}}"
+                                                                    value="{{comment['text']}}" type="text" />
+                                                            <button class="board_button mt-1" onclick="commentUpdate({{comment['id']}})"><i class="far fa-save"></i>Save</button>
+                                                            <button class="board_button mt-1" onclick="commentDelete({{comment['id']}})">
+                                                                <i class="far fa-trash-alt"></i> Delete
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                {% endfor %}
+                                                <form action="/board/{{board['id']}}/comment/{{task['id']}}"
+                                                    method="post">
+                                                    <div class="form-group">
+                                                        <input autocomplete="off" autofocus class="form-control"
+                                                            name="text" id="comment_id_{{task['id']}}" placeholder="Note..."
+                                                            type="text" />
+                                                        <button class="board_button mt-2" type="submit"><i class="far fa-clipboard"></i>Add Note</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </div>
+        </ul>
+    </div>
+</span>
+{% endblock %}

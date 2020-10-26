@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Apology
+{% endblock %}
+
+{% block main %}
+
+    <div class="alert alert-danger" role="alert">
+        <h1 class="alert-heading display-1 text-center font-weight-bold">{{ top }}</h1>
+        <h5 class="text-center">Some error has occured.</h5>
+        <hr>
+        <h3 class="text-center">{{ bottom|upper }}</h3>
+    </div>
+{% endblock %}
